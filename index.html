@@ -10,11 +10,18 @@
   <!--Import d3-->
   <!--<script src="https://d3js.org/d3.v5.min.js"></script>-->
   <script src="./d3.v5.min.js"></script>
+  <script src="./topojson.v2.min.js"></script>
   <style>
     .grid line {
       stroke: lightgrey;
       stroke-opacity: 0.8;
     }
+    .state {
+      fill: white;
+      stroke: black;
+    }
+
+
   </style>
 </head>
 
@@ -102,10 +109,80 @@
 
 <script>
   // Code for Graph One
+  var svg_width = 800;
+  var svg_height = 500;
+  var margin = { top: 30, right: 30, bottom: 50, left: 60};
+  var education_data = null;
+  var data_filtered = {};
+  var expenditure_data_2016 = [];
+  var expenditure_data_1992 = [];
+  var math_score_data_1993 = [];
+  var math_score_data_2017 = [];
+
+  async function draw_heat_map_graph() {
+
+    d3.select("#p1_div_for_svg")
+      .append("svg")
+      .attr("width", svg_width).attr("height", svg_height)
+      .attr("id", "p1_svg")
+      .style("border", "1px solid grey")
+      .append("g").attr("id", "p1_svg_g1");
+
+    svg = d3.select('#p1_svg_g1');
+
+    // load the state TopoJSON data
+    let states_topo = await d3.json("./us-map-data/us.json");
+    // convert the TopoJSON to GeoJson
+    let states_geo = topojson.feature(states_topo, states_topo.objects.states);
+    // D3 Projection
+    let projection = d3.geoAlbersUsa().fitSize([svg_width, svg_height], states_geo);
+    let path = d3.geoPath().projection(projection);
+
+    svg.selectAll("path")
+      .data(states_geo.features)
+      .enter()
+      .append("path")
+      .attr("class","state")
+      .attr("d", path)
+      .attr("state_id", data => data.id);
+
+    education_data = await d3.csv("./states_all.csv");
+
+    // var data_2016 = education_data.filter(item => Number(item['YEAR']) === 2016);
+    // var data_2016 = education_data.filter(item => Number(item['YEAR']) === 2016);
+    // var expenditure_data_2016 = [];
+    // var expenditure_data_1992 = [];
+
+    education_data.forEach(item => {
+      data_filtered[clean_name(item['STATE'])] = {}
+    });
+
+    education_data.forEach( (item) => {
+      let state = clean_name(item['STATE']);
+      if (Number(item['YEAR']) === 1992) {
+        data_filtered[state].expenditure_1992 = Number(item['TOTAL_EXPENDITURE']);
+        data_filtered[state].math_score_1992 = Number(item['AVG_MATH_8_SCORE']);
+      }
+      if (Number(item['YEAR']) === 2016) {
+        data_filtered[state].expenditure_2016 = Number(item['TOTAL_EXPENDITURE']);
+      }
+      if (Number(item['YEAR']) === 2017) {
+        data_filtered[state].math_score_2016 = Number(item['AVG_MATH_8_SCORE']);
+      }
+
+    });
 
 
 
+    console.log(education_data);
 
+  }
+
+  draw_heat_map_graph();
+
+  clean_name = (name) => {
+    return name.toLowerCase().replace(/[ \-,.:'&#!?]/g, "")
+  }
 
   // Code for Graph Two
 
