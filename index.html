@@ -27,7 +27,7 @@
       <ul>
         <li>By SM Mashuque, (sm2344)</li>
         <li>By Joe Mo, (x)</li>
-        <li>By Dana Luong, (x)</li>
+        <li>By Dana Luong, (dl697)</li>
       </ul>
     </div>
   </div>
@@ -80,7 +80,8 @@
     <h5 class="card-header">Graph 3: Bar Chart Comparison</h5>
     <div class="card-body">
       <p>
-        Description about the graph....
+        The bars of the chart show the expenditure by state for 1992 and 2017.
+        The line graph shows the trend in average math exam scores for 1992 and 2017.
       </p>
       <ul>
         <li>Something 1</li>
@@ -90,6 +91,7 @@
 
       <div class="svg-graph-container">
         <div id="p3_div_for_svg">
+          <svg id="graph3" width=400 height=400 style="background-color: lightgrey"></svg>
         </div>
         <div id="p3_div_for_legend">
         </div>
@@ -99,6 +101,7 @@
   </div>
 
 </div>
+
 
 <script>
   // Code for Graph One
@@ -113,7 +116,49 @@
 
 
   // Code for Graph Three
+  parsed = [];
+  maxExp = 0;
+  maxScore = 0;
+  d3.csv("states_all.csv").then(function(data) {
+    data.forEach(d => {
+      if (d["YEAR"] == 2015 ) {
+      parsed.push({"year": d["YEAR"],
+      "state": d["STATE"],
+      "expenditure": d["TOTAL_EXPENDITURE"],
+      "math_score": d["AVG_MATH_8_SCORE"]});
+    }
+    if (d["TOTAL_EXPENDITURE"] > maxExp) {
+      maxExp = d["TOTAL_EXPENDITURE"];
+    }
+    if (d["AVG_MATH_8_SCORE"] > maxScore) {
+      maxScore = d["AVG_MATH_8_SCORE"];
+    }
+    });
+    parsed = parsed.filter(d => d["math_score"] != "");
 
+    let g3SVG = d3.select("svg#graph3");
+    let width = g3SVG.attr("width");
+    let height = g3SVG.attr("height");
+    let margin = { top: 10, right: 10, bottom: 50, left: 50};
+    let chartWidth = width - margin.left - margin.right;
+    let chartHeight = height - margin.top - margin.bottom;
+
+    // Create scales
+    let xScale = d3.scaleLinear().domain([0,50]).range([0, chartWidth]);
+    let yScaleLeft = d3.scaleLinear().domain([0, maxExp + 100]).range([0, chartHeight]);
+    let yScaleRight = d3.scaleLinear().domain([0, maxScore + 20]).range([0, chartHeight]);
+
+    // Append axes
+    // let xAxis = d3.axisBottom(xScale).tickValues(parsed).tickFormat(d.state)
+
+    // Make gridlines
+
+    // Make axis labels
+
+    // Make rectangles
+
+    // Make line
+});
 </script>
 
 </body>
