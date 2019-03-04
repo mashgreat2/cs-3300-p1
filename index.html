@@ -207,16 +207,16 @@
       state_detail.scaled_score = state_detail.efficiency_score / max_efficiency_score
     });
 
-    const colorScale = d3.scaleSequential(d3.interpolateBuPu).domain([0,1]);
+    const color_scale = d3.scaleSequential(d3.interpolateOranges).domain([0,1]);
 
     svg.selectAll(".state")
       .style("fill", data => {
         let state_name = get_state_name(data.id, state_name_IDs);
         console.log("data: ", data);
         console.log("state_name: ", state_name);
-        if(valid_data[state_name] === undefined) {return colorScale(0);}
+        if(valid_data[state_name] === undefined) {return color_scale(0);}
         let score = valid_data[state_name].scaled_score;
-        return colorScale(score*20)
+        return color_scale(score*20)
       });
 
     // DRAW THE LEGEND>>>>
@@ -256,7 +256,7 @@
         .attr("height", bar_height)
         .attr('stroke-width', .5)
         .attr('stroke', "black")
-        .attr("fill", colorScale(i));
+        .attr("fill", color_scale(i));
     }
 
 
@@ -298,9 +298,9 @@
     svg.selectAll(".state_2")
       .style("fill", data => {
         let state_name = get_state_name(data.id, state_name_IDs);
-        if(valid_data[state_name] === undefined) {return colorScale(0);}
+        if(valid_data[state_name] === undefined) {return color_scale(0);}
         let expenditure_2016 = valid_data[state_name].expenditure_2016 / max_expenditure_2016;
-        return colorScale(expenditure_2016*1.2)
+        return color_scale(expenditure_2016*1.2)
       });
 
     // DRAW THE LEGEND>>>>
@@ -342,7 +342,7 @@
         .attr("height", bar_height)
         .attr('stroke-width', .5)
         .attr('stroke', "black")
-        .attr("fill", colorScale(i));
+        .attr("fill", color_scale(i));
     }
 
   }
