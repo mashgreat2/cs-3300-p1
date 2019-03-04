@@ -114,10 +114,7 @@
   var margin = { top: 30, right: 30, bottom: 50, left: 60};
   var education_data = null;
   var data_filtered = {};
-  var expenditure_data_2016 = [];
-  var expenditure_data_1992 = [];
-  var math_score_data_1993 = [];
-  var math_score_data_2017 = [];
+  var valid_data = [];
 
   async function draw_heat_map_graph() {
 
@@ -146,21 +143,24 @@
       .attr("d", path)
       .attr("state_id", data => data.id);
 
+    state_name_IDs = await d3.tsv("../us-map-data/us-state-names.tsv");
+
+    console.log("state_name_IDs: ", state_name_IDs);
+
     education_data = await d3.csv("./states_all.csv");
 
-    // var data_2016 = education_data.filter(item => Number(item['YEAR']) === 2016);
-    // var data_2016 = education_data.filter(item => Number(item['YEAR']) === 2016);
-    // var expenditure_data_2016 = [];
-    // var expenditure_data_1992 = [];
-
+    // setup objects for each state.
     education_data.forEach(item => {
-      data_filtered[clean_name(item['STATE'])] = {}
+      data_filtered[clean_name(item['STATE'])] = {name: item['STATE'], cleaned_name: clean_name(item['STATE'])}
     });
+
+
 
     education_data.forEach( (item) => {
       let state = clean_name(item['STATE']);
       if (Number(item['YEAR']) === 1992) {
-        data_filtered[state].expenditure_1992 = Number(item['TOTAL_EXPENDITURE']);
+        // adjust the expenditure for inflation, $100 in 1992 -->  $171.07 in 2016.
+        data_filtered[state].expenditure_1992 = Number(item['TOTAL_EXPENDITURE'] * 1.7107);
         data_filtered[state].math_score_1992 = Number(item['AVG_MATH_8_SCORE']);
       }
       if (Number(item['YEAR']) === 2016) {
@@ -173,8 +173,21 @@
     });
 
 
+    Object.entries(data_filtered).forEach(([state, state_detail]) => {
+      let invalid_entry = Object.values(state_detail).includes(0) || Object.keys(state_detail).length === 2;
+      if (invalid_entry === false) {
+        let numerator = state_detail.math_score_2016 - state_detail.math_score_1992;
+        let denominator = state_detail.expenditure_2016 - state_detail.expenditure_1992;
+        state_detail.efficiency_score = numerator / denominator;
+        valid_data.push(state_detail);
+      }
+    });
 
-    console.log(education_data);
+    var max_efficiency_score = Math.max(...valid_data.map(item => item.efficiency_score));
+
+    valid_data.forEach(state => {
+      state.scaled_score = state.efficiency_score / max_efficiency_score
+    });
 
   }
 
