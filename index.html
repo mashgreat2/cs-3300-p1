@@ -40,22 +40,15 @@
   </div>
 
   <div class="card mx-auto  my-2" style="width: 900px;">
-    <h4 class="card-header">Graph 1: Spending Efficiency</h4>
+    <h4 class="card-header">Graph 1: Education Budget of United States in 2016</h4>
     <div class="card-body">
       <p>
-        Every year, almost all the states increase budget for public schools.
-        This graph visualizes data from the U.S. Education Department.
-        This graph compares all the states of America and shows how effective
-        they were in increasing the budget and seeing improved math scores by 8th graders.
+        This graph shows the education budget expenditure of all the states in America for the year 2016.
       </p>
-      <p>
-        For each state, the efficiency numbers were generated with this formula: <br>
-        (Avg math score in 2017 - Avg math score in 1992) / (expenditure in 2017 - expenditure in 1992)
-      </p>
-      <p>
-        This gives us math scores increase per dollar. Finally, before graphing the efficiency numbers,
-        they were scaled between 0 and 1 on the color gradient.
-      </p>
+      <div id="p1_div_for_svg_2">
+      </div>
+      <div id="p1_div_for_legend_2">
+      </div>
       Marks:
       <ul>
         <li>The state lines and the areas.</li>
@@ -63,25 +56,35 @@
       Channels:
       <ul>
         <li>Color hue saturation scale.</li>
-        <li>Spacial regions(boundaries) inside the map.</li>
+        <li>Spacial regions(boundaries) of the map.</li>
       </ul>
+    </div>
+  </div>
+
+  <div class="card mx-auto  my-2" style="width: 900px;">
+    <h4 class="card-header">Graph 2: Spending Efficiency</h4>
+    <div class="card-body">
+      <p>
+        This graph visualizes data from the U.S. Education Department.
+        Every year, almost all the states increase budget for public schools.
+        This graph compares all the states of America and shows how effective
+        they were in increasing the budget and seeing improved math scores by 8th graders from 1992-2016.
+      </p>
+      <p>
+        For each state, the efficiency numbers were generated with this formula: <br>
+        (Avg math score in 2016 - Avg math score in 1992) / (expenditure in 2016 - expenditure in 1992)<br>
+        Note that the dollar amount of 1992 was adjusted for inflation to year 2016.
+      </p>
+      <p>
+        This gives us math scores increase per dollar. Finally, before graphing the efficiency numbers,
+        they were scaled between 0 and 1 on the color gradient.
+      </p>
       <h5>Education Budget Increase Effectiveness in America Between 1992 and 2016.</h5>
       <div id="p1_div_for_svg">
       </div>
       <div id="p1_div_for_legend">
       </div>
       <br>
-
-    </div>
-  </div>
-
-  <div class="card mx-auto  my-2" style="width: 900px;">
-    <h4 class="card-header">Graph 2: Education Budget Ratios Between States in 2016</h4>
-    <div class="card-body">
-      <div id="p1_div_for_svg_2">
-      </div>
-      <div id="p1_div_for_legend_2">
-      </div>
 
     </div>
   </div>
@@ -149,26 +152,6 @@
       .attr("d", path)
       .attr("state_id", data => data.id)
       .attr("state_name", data => get_state_name(data.id, state_name_IDs))
-      .on("mouseover", function(d) {
-        let state = d3.select(this);
-        state.attr('stroke-width', 5);
-
-        d3.select('#p1_svg_g1').append("text")
-          .attr("id", "state_text"+state.attr("state_name"))
-          .attr("x", 400)
-          .attr("y", 30)
-          .style("font-size","27px")
-          .text(state.attr("state_name"))
-          .style("text-anchor", "middle")
-          .style("font-weight", "bold");
-
-      })
-      .on("mouseout", function(d) {
-        let state = d3.select(this);
-        state.attr('stroke-width', 1);
-
-        d3.select("#" + "state_text"+state.attr("state_name")).remove();
-      });
 
 
     education_data = await d3.csv("./states_all.csv");
@@ -214,15 +197,7 @@
       state_detail.scaled_score = state_detail.efficiency_score / max_efficiency_score
     });
 
-    // var colorScale = d3.interpolatePuBu()
     const colorScale = d3.scaleSequential(d3.interpolateBuPu).domain([0,1]);
-    // var scaleLinear = d3.scaleLinear()
-    //   .domain([0,1])
-    //   .range(["#FFFFDD", "#3E9583", "#1F2D86"]);
-
-    // var quantileScale = d3.scaleQuantile()
-    //   .domain(Object.values(valid_data).map(item => item.scaled_score))
-    //   .range(["#fff","#f6fbfc","#adc2da","#8879b3","#762b80"]);
 
     svg.selectAll(".state")
       .style("fill", data => {
@@ -297,32 +272,6 @@
       .attr("d", path)
       .attr("state_id", data => data.id)
       .attr("state_name", data => get_state_name(data.id, state_name_IDs))
-      .on("mouseover", function(d) {
-        let state = d3.select(this);
-        let state_name = state.attr("state_name");
-        let expenditure_2016 = "0";
-        if(valid_data[state_name] !== undefined) {
-          expenditure_2016 = d3.format('$0.2s')(valid_data[state_name].expenditure_2016)
-        }
-        expenditure_2016 = expenditure_2016.replace(/[G]/g, "B");
-        state.attr('stroke-width', 5);
-
-        d3.select('#p1_svg_g1_2').append("text")
-          .attr("id", "state_text"+state_name)
-          .attr("x", 400)
-          .attr("y", 30)
-          .style("font-size","27px")
-          .text(state.attr("state_name") + ", " + expenditure_2016)
-          .style("text-anchor", "middle")
-          .style("font-weight", "bold");
-
-      })
-      .on("mouseout", function(d) {
-        let state = d3.select(this);
-        state.attr('stroke-width', 1);
-
-        d3.select("#" + "state_text"+state.attr("state_name")).remove();
-      });
 
     var max_expenditure_2016 = Math.max(...Object.values(valid_data).map(item => item.expenditure_2016));
 
@@ -352,7 +301,9 @@
       .domain([0, 1])
       .range([margin.left, svg_width-margin.right]);
 
-    bottomAxis = d3.axisBottom(x_scale).ticks(20);
+    bottomAxis = d3.axisBottom(x_scale)
+      .tickFormat(d => d3.format('$0.2s')(d * max_expenditure_2016) )
+      .ticks(20, );
     svg.append("g").attr("class", "x_axis")
       .attr("transform","translate("+ (0) +","+ (svg_height-margin.bottom) +")")
       .call(bottomAxis)
@@ -388,6 +339,10 @@
       return Number(state.id) === id;
     });
     return clean_name(temp[0].name);
+  }
+
+  multipl_show_numbers = (num) => {
+    return d3.format('$0.2s')(num)
   }
 
   // Code for Graph Two
