@@ -84,8 +84,8 @@
     <h5 class="card-header">Graph 3: Bar Chart Comparison</h5>
     <div class="card-body">
       <p>
-        The bars of the chart show the expenditure by state for 1992 and 2017.
-        The line graph shows the trend in average math exam scores for 1992 and 2017.
+        The bars of the chart show the expenditure by state for 2015.
+        The line graph shows the trend in average math and reading exam scores for eight graders in 2015.
       </p>
       <ul>
         <li>Visual Marks: Vertical bars indicating state expenditure,
@@ -150,77 +150,14 @@
     maxScore = d3.max(scores);
 
     parsed = parsed.filter(d => d["math_score"] != "");
-    console.log("MAX")
-    console.log(maxExp)
     let g3SVG = d3.select("svg#graph3");
     let width = g3SVG.attr("width");
     let height = g3SVG.attr("height");
-    let margin = { top: 50, right: 50, bottom: 50, left: 100};
+    let margin = { top: 10, right: 60, bottom: 100, left: 90};
     let chartWidth = width - margin.left - margin.right;
     let chartHeight = height - margin.top - margin.bottom;
 
-    const STATE_AB = states = {
-        'AK': 'Alaska',
-        'AL': 'Alabama',
-        'AR': 'Arkansas',
-        'AS': 'American Samoa',
-        'AZ': 'Arizona',
-        'CA': 'California',
-        'CO': 'Colorado',
-        'CT': 'Connecticut',
-        'DC': 'District of Columbia',
-        'DE': 'Delaware',
-        'FL': 'Florida',
-        'GA': 'Georgia',
-        'GU': 'Guam',
-        'HI': 'Hawaii',
-        'IA': 'Iowa',
-        'ID': 'Idaho',
-        'IL': 'Illinois',
-        'IN': 'Indiana',
-        'KS': 'Kansas',
-        'KY': 'Kentucky',
-        'LA': 'Louisiana',
-        'MA': 'Massachusetts',
-        'MD': 'Maryland',
-        'ME': 'Maine',
-        'MI': 'Michigan',
-        'MN': 'Minnesota',
-        'MO': 'Missouri',
-        'MP': 'Northern Mariana Islands',
-        'MS': 'Mississippi',
-        'MT': 'Montana',
-        'NA': 'National',
-        'NC': 'North Carolina',
-        'ND': 'North Dakota',
-        'NE': 'Nebraska',
-        'NH': 'New Hampshire',
-        'NJ': 'New Jersey',
-        'NM': 'New Mexico',
-        'NV': 'Nevada',
-        'NY': 'New York',
-        'OH': 'Ohio',
-        'OK': 'Oklahoma',
-        'OR': 'Oregon',
-        'PA': 'Pennsylvania',
-        'PR': 'Puerto Rico',
-        'RI': 'Rhode Island',
-        'SC': 'South Carolina',
-        'SD': 'South Dakota',
-        'TN': 'Tennessee',
-        'TX': 'Texas',
-        'UT': 'Utah',
-        'VA': 'Virginia',
-        'VI': 'Virgin Islands',
-        'VT': 'Vermont',
-        'WA': 'Washington',
-        'WI': 'Wisconsin',
-        'WV': 'West Virginia',
-        'WY': 'Wyoming'
-}
-
     // Create scales
-    // let xScale = d3.scaleOrdinal().domain(Object.keys(STATE_AB)).range([0, chartWidth]);
     let xScale = d3.scalePoint().domain(ABBREV).range([0,chartWidth]);
     let yScaleLeft = d3.scaleLinear().domain([0, (maxExp + 100)]).range([chartHeight, 0]).nice();
     let yScaleRight = d3.scaleLinear().domain([minScore - 20, maxScore + 20]).range([chartHeight,0]).nice();
@@ -248,7 +185,7 @@
       .attr("class", "labels")
       .attr("text_anchor", "middle")
       .attr("x", (chartWidth / 2)+margin.left)
-      .attr("y", height-10)
+      .attr("y", chartHeight+50)
       .text("State")
       .style("font-size", "12px");
 
@@ -259,7 +196,7 @@
         .attr("x", margin.left)
         .attr("y", chartHeight)
         .text("Total Expenditure")
-        .attr("transform", "translate(-275," + (chartHeight+50) + ") rotate(-90)")
+        .attr("transform", "translate(-275," + (chartHeight) + ") rotate(-90)")
         .style("font-size", "12px");
 
 
@@ -270,7 +207,7 @@
           .attr("x", margin.left)
           .attr("y", chartHeight-200)
           .text("Avg. Grade 8 Exam Score")
-          .attr("transform", "translate(" + (chartWidth+margin.left+140) + "," + 30 + ") rotate(90)")
+          .attr("transform", "translate(" + (chartWidth+margin.left+140) + "," + 0 + ") rotate(90)")
           .style("font-size", "12px");
 
     // Create rectangles for expenditure bars
@@ -321,6 +258,28 @@
         .style("stroke-width", "2px");
     })
 
+    // Create legend for line plots
+    g3SVG.append("circle")
+    .attr("cx", chartWidth-30)
+    .attr("cy", height-30)
+    .attr("r", 4)
+    .style("fill", "burlywood")
+    g3SVG.append("text")
+    .attr("x", chartWidth-20)
+    .attr("y", height-25)
+    .text("Avg. Grade 8 Math Scores")
+    .style("font-size", "12px");
+
+    g3SVG.append("circle")
+    .attr("cx", chartWidth-30)
+    .attr("cy", height-10)
+    .attr("r", 4)
+    .style("fill", "coral")
+    g3SVG.append("text")
+    .attr("x", chartWidth-20)
+    .attr("y", height-5)
+    .text("Avg. Grade 8 Reading Scores")
+    .style("font-size", "12px");
 });
 </script>
 
