@@ -114,7 +114,7 @@
   var margin = { top: 30, right: 30, bottom: 50, left: 60};
   var education_data = null;
   var data_filtered = {};
-  var valid_data = [];
+  var valid_data = {};
 
   async function draw_heat_map_graph() {
 
@@ -123,6 +123,7 @@
       .attr("width", svg_width).attr("height", svg_height)
       .attr("id", "p1_svg")
       .style("border", "1px solid grey")
+      .style("background-color", "lightgrey")
       .append("g").attr("id", "p1_svg_g1");
 
     svg = d3.select('#p1_svg_g1');
@@ -142,10 +143,6 @@
       .attr("class","state")
       .attr("d", path)
       .attr("state_id", data => data.id);
-
-    state_name_IDs = await d3.tsv("../us-map-data/us-state-names.tsv");
-
-    console.log("state_name_IDs: ", state_name_IDs);
 
     education_data = await d3.csv("./states_all.csv");
 
@@ -179,22 +176,52 @@
         let numerator = state_detail.math_score_2016 - state_detail.math_score_1992;
         let denominator = state_detail.expenditure_2016 - state_detail.expenditure_1992;
         state_detail.efficiency_score = numerator / denominator;
-        valid_data.push(state_detail);
+        // valid_data.push(state_detail);
+        valid_data[state] = state_detail;
       }
     });
 
-    var max_efficiency_score = Math.max(...valid_data.map(item => item.efficiency_score));
+    var max_efficiency_score = Math.max(...Object.values(valid_data).map(item => item.efficiency_score));
 
-    valid_data.forEach(state => {
-      state.scaled_score = state.efficiency_score / max_efficiency_score
+    Object.entries(valid_data).forEach(([state, state_detail]) => {
+      state_detail.scaled_score = state_detail.efficiency_score / max_efficiency_score
     });
 
+    // var colorScale = d3.interpolatePuBu()
+    const colorScale = d3.scaleSequential(d3.interpolateBuPu).domain([0,1]);
+    var scaleLinear = d3.scaleLinear()
+      .domain([0,1])
+      .range(["#FFFFDD", "#3E9583", "#1F2D86"]);
+
+    var quantileScale = d3.scaleQuantile()
+      .domain(Object.values(valid_data).map(item => item.scaled_score))
+      .range(["#fff","#f6fbfc","#adc2da","#8879b3","#762b80"]);
+
+    var state_name_IDs = await d3.tsv("../us-map-data/us-state-names.tsv");
+
+    svg.selectAll(".state")
+      .style("fill", data => {
+        let state_name = get_state_name(data.id, state_name_IDs);
+        console.log("data: ", data);
+        console.log("state_name: ", state_name);
+        if(valid_data[state_name] === undefined) {return colorScale(0);}
+        let score = valid_data[state_name].scaled_score;
+        return colorScale(score*20)
+      });
   }
 
   draw_heat_map_graph();
 
   clean_name = (name) => {
-    return name.toLowerCase().replace(/[ \-,.:'&#!?]/g, "")
+    let cleaned_name = name.replace(/[ ]/g, "_");
+    return cleaned_name.toLowerCase().replace(/[ \-,.:'()&#!?]/g, "")
+  };
+
+  get_state_name = (id, state_name_IDs) => {
+    let temp = state_name_IDs.filter(state => {
+      return Number(state.id) === id;
+    });
+    return clean_name(temp[0].name);
   }
 
   // Code for Graph Two
