@@ -151,7 +151,17 @@
       .attr("class","state")
       .attr("d", path)
       .attr("state_id", data => data.id)
-      .attr("state_name", data => get_state_name(data.id, state_name_IDs))
+      .attr("state_name", data => get_state_name(data.id, state_name_IDs));
+
+    svg.selectAll("text")
+      .data(states_geo.features)
+      .enter()
+      .append("svg:text")
+      .text(data => get_state_name(data.id, state_name_IDs, short=true))
+      .attr("x", d => path.centroid(d)[0])
+      .attr("y", d => path.centroid(d)[1])
+      .attr("text-anchor","middle")
+      .attr('font-size','13px');
 
 
     education_data = await d3.csv("./states_all.csv");
@@ -271,7 +281,17 @@
       .attr("class","state_2")
       .attr("d", path)
       .attr("state_id", data => data.id)
-      .attr("state_name", data => get_state_name(data.id, state_name_IDs))
+      .attr("state_name", data => get_state_name(data.id, state_name_IDs));
+
+    svg.selectAll("text")
+      .data(states_geo.features)
+      .enter()
+      .append("svg:text")
+      .text(data => get_state_name(data.id, state_name_IDs, short=true))
+      .attr("x", d => path.centroid(d)[0])
+      .attr("y", d => path.centroid(d)[1])
+      .attr("text-anchor","middle")
+      .attr('font-size','13px');
 
     var max_expenditure_2016 = Math.max(...Object.values(valid_data).map(item => item.expenditure_2016));
 
@@ -334,16 +354,14 @@
     return cleaned_name.toLowerCase().replace(/[ \-,.:'()&#!?]/g, "")
   };
 
-  get_state_name = (id, state_name_IDs) => {
+  get_state_name = (id, state_name_IDs, short=false) => {
     let temp = state_name_IDs.filter(state => {
       return Number(state.id) === id;
     });
+    if (short) return temp[0].code;
     return clean_name(temp[0].name);
-  }
+  };
 
-  multipl_show_numbers = (num) => {
-    return d3.format('$0.2s')(num)
-  }
 
   // Code for Graph Two
 
