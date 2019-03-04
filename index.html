@@ -84,7 +84,7 @@
     <h5 class="card-header">Graph 3: Bar Chart Comparison</h5>
     <div class="card-body">
       <p>
-        The bars of the chart show the expenditure by state for 2015.
+        The bars of the chart show the expenditure per student by state for 2015.
         The line graph shows the trend in average math and reading exam scores for eight graders in 2015.
       </p>
       <ul>
@@ -132,7 +132,7 @@
       if (d["YEAR"] == 2015 ) {
       parsed.push({"year": d["YEAR"],
       "state": d["STATE"],
-      "expenditure": d["TOTAL_EXPENDITURE"],
+      "expenditure": parseInt(d["TOTAL_EXPENDITURE"])/parseInt(d["ENROLL"]),
       "read_score": d["AVG_READING_8_SCORE"],
       "math_score": d["AVG_MATH_8_SCORE"],
       "abbrev": ABBREV[i+1]});
@@ -159,8 +159,8 @@
 
     // Create scales
     let xScale = d3.scalePoint().domain(ABBREV).range([0,chartWidth]);
-    let yScaleLeft = d3.scaleLinear().domain([0, (maxExp + 100)]).range([chartHeight, 0]).nice();
-    let yScaleRight = d3.scaleLinear().domain([minScore - 20, maxScore + 20]).range([chartHeight,0]).nice();
+    let yScaleLeft = d3.scaleLinear().domain([0, (maxExp + 5)]).range([chartHeight, 0]).nice();
+    let yScaleRight = d3.scaleLinear().domain([minScore-40, maxScore+20]).range([chartHeight,0]).nice();
 
     // Append axes
     let xAxis = d3.axisBottom().scale(xScale);
@@ -195,10 +195,9 @@
         .attr("text_anchor", "middle")
         .attr("x", margin.left)
         .attr("y", chartHeight)
-        .text("Total Expenditure")
-        .attr("transform", "translate(-275," + (chartHeight) + ") rotate(-90)")
+        .text("Total Expenditure Per Student")
+        .attr("transform", "translate(-250," + (chartHeight+30) + ") rotate(-90)")
         .style("font-size", "12px");
-
 
         // Add y-axis label
         g3SVG.append("text")
