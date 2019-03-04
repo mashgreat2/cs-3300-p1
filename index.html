@@ -16,7 +16,7 @@
       stroke: lightgrey;
       stroke-opacity: 0.8;
     }
-    .state {
+    .state , .state_2 {
       fill: white;
       stroke: black;
     }
@@ -28,7 +28,7 @@
 <body style="background-color: #dddddd;">
 <div class="container">
   <div class="card mx-auto  my-2" style="width: 900px;">
-    <h5 class="card-header">INFO 3300 - Project 1</h5>
+    <h4 class="card-header">INFO 3300 - Project 1</h4>
     <div class="card-body">
       <p>Project by:</p>
       <ul>
@@ -40,51 +40,46 @@
   </div>
 
   <div class="card mx-auto  my-2" style="width: 900px;">
-    <h5 class="card-header">Graph 1: Heat-map of Spending Efficiency</h5>
+    <h4 class="card-header">Graph 1: Spending Efficiency</h4>
     <div class="card-body">
       <p>
-        Description about the graph....
+        Every year, almost all the states increase budget for public schools.
+        This graph visualizes data from the U.S. Education Department.
+        This graph compares all the states of America and shows how effective
+        they were in increasing the budget and seeing improved math scores by 8th graders.
       </p>
-      <ul>
-        <li>Something 1</li>
-        <li>Something 2</li>
-        <li>Something 3</li>
-      </ul>
+      <p>
+        For each state, generate the efficiency numbers with this formula: <br>
+        (Avg math score in 2017 - Avg math score in 1992) / (expenditure in 2017 - expenditure in 1992)
+      </p>
+      <p>
+        This gives us math scores increase per dollar. Finally, before graphing the efficiency numbers,
+        they were scaled between 0 and 1 on the color gradient.
+      </p>
 
-      <div class="svg-graph-container">
-        <div id="p1_div_for_svg">
-        </div>
-        <div id="p1_div_for_legend">
-        </div>
+      <div id="p1_div_for_svg">
+      </div>
+      <div id="p1_div_for_legend">
+      </div>
+      <br>
+      <h5>Education Budget Increase Effectiveness in America Between 1992 and 2016.</h5>
+
+    </div>
+  </div>
+
+  <div class="card mx-auto  my-2" style="width: 900px;">
+    <h4 class="card-header">Graph 2: Education Budget Ratios Between States in 2016</h4>
+    <div class="card-body">
+      <div id="p1_div_for_svg_2">
+      </div>
+      <div id="p1_div_for_legend_2">
       </div>
 
     </div>
   </div>
 
   <div class="card mx-auto  my-2" style="width: 900px;">
-    <h5 class="card-header">Graph 2: Scatterplot Comparison</h5>
-    <div class="card-body">
-      <p>
-        Description about the graph....
-      </p>
-      <ul>
-        <li>Something 1</li>
-        <li>Something 2</li>
-        <li>Something 3</li>
-      </ul>
-
-      <div class="svg-graph-container">
-        <div id="p2_div_for_svg">
-        </div>
-        <div id="p2_div_for_legend">
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <div class="card mx-auto  my-2" style="width: 900px;">
-    <h5 class="card-header">Graph 3: Bar Chart Comparison</h5>
+    <h4 class="card-header">Graph 3: Bar Chart Comparison</h4>
     <div class="card-body">
       <p>
         Description about the graph....
@@ -126,7 +121,7 @@
       .style("background-color", "lightgrey")
       .append("g").attr("id", "p1_svg_g1");
 
-    svg = d3.select('#p1_svg_g1');
+    var svg = d3.select('#p1_svg_g1');
 
     // load the state TopoJSON data
     let states_topo = await d3.json("./us-map-data/us.json");
@@ -136,13 +131,37 @@
     let projection = d3.geoAlbersUsa().fitSize([svg_width, svg_height], states_geo);
     let path = d3.geoPath().projection(projection);
 
+    var state_name_IDs = await d3.tsv("../us-map-data/us-state-names.tsv");
+
     svg.selectAll("path")
       .data(states_geo.features)
       .enter()
       .append("path")
       .attr("class","state")
       .attr("d", path)
-      .attr("state_id", data => data.id);
+      .attr("state_id", data => data.id)
+      .attr("state_name", data => get_state_name(data.id, state_name_IDs))
+      .on("mouseover", function(d) {
+        let state = d3.select(this);
+        state.attr('stroke-width', 5);
+
+        d3.select('#p1_svg_g1').append("text")
+          .attr("id", "state_text"+state.attr("state_name"))
+          .attr("x", 400)
+          .attr("y", 30)
+          .style("font-size","27px")
+          .text(state.attr("state_name"))
+          .style("text-anchor", "middle")
+          .style("font-weight", "bold");
+
+      })
+      .on("mouseout", function(d) {
+        let state = d3.select(this);
+        state.attr('stroke-width', 1);
+
+        d3.select("#" + "state_text"+state.attr("state_name")).remove();
+      });
+
 
     education_data = await d3.csv("./states_all.csv");
 
@@ -189,15 +208,13 @@
 
     // var colorScale = d3.interpolatePuBu()
     const colorScale = d3.scaleSequential(d3.interpolateBuPu).domain([0,1]);
-    var scaleLinear = d3.scaleLinear()
-      .domain([0,1])
-      .range(["#FFFFDD", "#3E9583", "#1F2D86"]);
+    // var scaleLinear = d3.scaleLinear()
+    //   .domain([0,1])
+    //   .range(["#FFFFDD", "#3E9583", "#1F2D86"]);
 
-    var quantileScale = d3.scaleQuantile()
-      .domain(Object.values(valid_data).map(item => item.scaled_score))
-      .range(["#fff","#f6fbfc","#adc2da","#8879b3","#762b80"]);
-
-    var state_name_IDs = await d3.tsv("../us-map-data/us-state-names.tsv");
+    // var quantileScale = d3.scaleQuantile()
+    //   .domain(Object.values(valid_data).map(item => item.scaled_score))
+    //   .range(["#fff","#f6fbfc","#adc2da","#8879b3","#762b80"]);
 
     svg.selectAll(".state")
       .style("fill", data => {
@@ -208,6 +225,147 @@
         let score = valid_data[state_name].scaled_score;
         return colorScale(score*20)
       });
+
+    // DRAW THE LEGEND>>>>
+    svg_width = 800;
+    svg_height = 100;
+    margin = { top: 10, right: 50, bottom: 20, left: 50};
+    var bar_height = 50;
+    var step_size = 5;
+    d3.select("#p1_div_for_legend")
+      .append("svg")
+      .attr("width", svg_width).attr("height", svg_height)
+      // .style("border", "1px solid grey")
+      .append("g").attr("id", "p1_legend_svg_g1");
+
+    svg = d3.select("#p1_legend_svg_g1");
+
+    x_scale = d3.scaleLinear()
+      .domain([0, 1])
+      .range([margin.left, svg_width-margin.right]);
+
+    bottomAxis = d3.axisBottom(x_scale).ticks(20);
+    svg.append("g").attr("class", "x_axis")
+      .attr("transform","translate("+ (0) +","+ (svg_height-margin.bottom) +")")
+      .call(bottomAxis)
+      .selectAll("text")
+      .style("text-anchor", "middle");
+
+    svg.append("g").attr("id", "legend_bars");
+
+    svg = d3.select("#legend_bars");
+
+    for (let i = 0; i <= 1.01 ; i = i + 0.01) {
+      svg.append("rect")
+        .attr("x", x_scale(i))
+        .attr("y", 25)
+        .attr("width", step_size)
+        .attr("height", bar_height)
+        .attr('stroke-width', .5)
+        .attr('stroke', "black")
+        .attr("fill", colorScale(i));
+    }
+
+
+    // Draw Another Graph with just budget.
+
+    svg_width = 800;
+    svg_height = 500;
+
+    d3.select("#p1_div_for_svg_2")
+      .append("svg")
+      .attr("width", svg_width).attr("height", svg_height)
+      .style("border", "1px solid grey")
+      .style("background-color", "lightgrey")
+      .append("g").attr("id", "p1_svg_g1_2");
+
+    svg = d3.select('#p1_svg_g1_2');
+
+    svg.selectAll("path")
+      .data(states_geo.features)
+      .enter()
+      .append("path")
+      .attr("class","state_2")
+      .attr("d", path)
+      .attr("state_id", data => data.id)
+      .attr("state_name", data => get_state_name(data.id, state_name_IDs))
+      .on("mouseover", function(d) {
+        let state = d3.select(this);
+        let state_name = state.attr("state_name");
+        let expenditure_2016 = "0";
+        if(valid_data[state_name] !== undefined) {
+          expenditure_2016 = d3.format('$0.2s')(valid_data[state_name].expenditure_2016)
+        }
+        expenditure_2016 = expenditure_2016.replace(/[G]/g, "B");
+        state.attr('stroke-width', 5);
+
+        d3.select('#p1_svg_g1_2').append("text")
+          .attr("id", "state_text"+state_name)
+          .attr("x", 400)
+          .attr("y", 30)
+          .style("font-size","27px")
+          .text(state.attr("state_name") + ", " + expenditure_2016)
+          .style("text-anchor", "middle")
+          .style("font-weight", "bold");
+
+      })
+      .on("mouseout", function(d) {
+        let state = d3.select(this);
+        state.attr('stroke-width', 1);
+
+        d3.select("#" + "state_text"+state.attr("state_name")).remove();
+      });
+
+    var max_expenditure_2016 = Math.max(...Object.values(valid_data).map(item => item.expenditure_2016));
+
+    svg.selectAll(".state_2")
+      .style("fill", data => {
+        let state_name = get_state_name(data.id, state_name_IDs);
+        if(valid_data[state_name] === undefined) {return colorScale(0);}
+        let expenditure_2016 = valid_data[state_name].expenditure_2016 / max_expenditure_2016;
+        return colorScale(expenditure_2016*1.2)
+      });
+
+    // DRAW THE LEGEND>>>>
+    svg_width = 800;
+    svg_height = 100;
+    margin = { top: 10, right: 50, bottom: 20, left: 50};
+    bar_height = 50;
+    step_size = 5;
+    d3.select("#p1_div_for_legend_2")
+      .append("svg")
+      .attr("width", svg_width).attr("height", svg_height)
+    // .style("border", "1px solid grey")
+      .append("g").attr("id", "p1_legend_svg_g1_2");
+
+    svg = d3.select("#p1_legend_svg_g1_2");
+
+    x_scale = d3.scaleLinear()
+      .domain([0, 1])
+      .range([margin.left, svg_width-margin.right]);
+
+    bottomAxis = d3.axisBottom(x_scale).ticks(20);
+    svg.append("g").attr("class", "x_axis")
+      .attr("transform","translate("+ (0) +","+ (svg_height-margin.bottom) +")")
+      .call(bottomAxis)
+      .selectAll("text")
+      .style("text-anchor", "middle");
+
+    svg.append("g").attr("id", "legend_bars_2");
+
+    svg = d3.select("#legend_bars_2");
+
+    for (let i = 0; i <= 1.01 ; i = i + 0.01) {
+      svg.append("rect")
+        .attr("x", x_scale(i))
+        .attr("y", 25)
+        .attr("width", step_size)
+        .attr("height", bar_height)
+        .attr('stroke-width', .5)
+        .attr('stroke', "black")
+        .attr("fill", colorScale(i));
+    }
+
   }
 
   draw_heat_map_graph();
