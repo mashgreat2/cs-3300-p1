@@ -204,7 +204,8 @@
         .attr("class","x gridlines")
         .attr("transform", "translate(20,600)")
         // Color taken from https://htmlcolorcodes.com/color-picker/
-        .style("color", "#0E8FEF")
+        // .style("color", "#0E8FEF")
+        .style("color", "#C3C6C4")
         .style("stroke-width",.7)
         .call(xAxisGridlines);
 
@@ -213,7 +214,8 @@
         .attr("class","y left gridlines")
         .attr("transform", "translate(50,0)")
         // Color taken from https://htmlcolorcodes.com/color-picker/
-        .style("color", "#F47037")
+        // .style("color", "#F47037")
+        .style("color", "#C3C6C4")
         .style("stroke-width",.7)
         .call(yLeftAxisGridlines);
 
@@ -222,7 +224,8 @@
         .attr("class","y right gridlines")
         .attr("transform", "translate(770,0)")
         // Color taken from https://htmlcolorcodes.com/color-picker/
-        .style("color", "#31CA3A")
+        // .style("color", "#31CA3A")
+        .style("color", "#C3C6C4")
         .style("stroke-width",.7)
         .call(yRightAxisGridlines);
 
@@ -259,7 +262,7 @@
         .attr("cx","120")
         .attr("cy","20")
         .style("fill", "#F47037")
-        .style("opacity",0.8);
+        .style("opacity",0.8)
 
       legend.append("text")
         .attr("x","140")
