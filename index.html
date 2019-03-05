@@ -22,6 +22,10 @@
     }
 
 
+
+    g.x text {
+      font-size: 7.5px;
+    }
   </style>
 </head>
 
@@ -34,7 +38,7 @@
         <ul>
           <li>By SM Mashuque, (sm2344)</li>
           <li>By Joe Mo, (jjm492)</li>
-          <li>By Dana Luong, (x)</li>
+          <li>By Dana Luong, (dl697)</li>
         </ul>
       </div>
     </div>
@@ -98,24 +102,24 @@
       </div>
     </div>
 
-    <div class="card mx-auto  my-2" style="width: 900px;">
-      <h5 class="card-header">Graph 3: Bar Chart Comparison</h5>
-      <div class="card-body">
-        <p>
-          Description about the graph....
-        </p>
-        <ul>
-          <li>Something 1</li>
-          <li>Something 2</li>
-          <li>Something 3</li>
-        </ul>
+  <div class="card mx-auto  my-2" style="width: 900px;">
+    <h5 class="card-header">Graph 3: Bar Chart Comparison</h5>
+    <div class="card-body">
+      <p>
+        The bars of the chart show the expenditure per student by state for 2015.
+        The line graph shows the trend in average math and reading exam scores for eight graders in 2015.
+        For some states, higher expenditure per student was correlated with higher
+        exam scores, but the relationship is not strong. Reading scores tended
+        to be lower than math scores.
+      </p>
 
-        <div class="svg-graph-container">
-          <div id="p3_div_for_svg">
-          </div>
-          <div id="p3_div_for_legend">
-          </div>
+      <div class="svg-graph-container">
+        <div id="p3_div_for_svg">
+          <svg id="graph3" width=800 height=400></svg>
         </div>
+        <div id="p3_div_for_legend">
+        </div>
+      </div>
 
       </div>
     </div>
@@ -563,7 +567,173 @@
 
 
   // Code for Graph Three
+  const ABBREV = ["", "AL","AK","AZ","AR","CA","CO","CT","DC","DE","FL","GA","HI","ID","IL",
+  "IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH",
+  "NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT",
+  "VT","VA","WA","WV","WI","WY", " "];
 
+  parsed = [];
+  d3.csv("states_all.csv").then(function(data) {
+    data.forEach((d,i) => {
+      if (d["YEAR"] == 2015 ) {
+      parsed.push({"year": d["YEAR"],
+      "state": d["STATE"],
+      "expenditure": parseInt(d["TOTAL_EXPENDITURE"])/parseInt(d["ENROLL"]),
+      "read_score": d["AVG_READING_8_SCORE"],
+      "math_score": d["AVG_MATH_8_SCORE"],
+      "abbrev": ABBREV[i+1]});
+    }});
+
+    exp = [];
+    scores = [];
+    maxScore = 0;
+    parsed.forEach(function(d) {
+      exp.push(parseInt(d.expenditure));
+      scores.push(parseInt(d.math_score))
+      });
+    maxExp = d3.max(exp);
+    minScore = d3.min(scores);
+    maxScore = d3.max(scores);
+
+    parsed = parsed.filter(d => d["math_score"] != "");
+    let g3SVG = d3.select("svg#graph3");
+    let width = g3SVG.attr("width");
+    let height = g3SVG.attr("height");
+    let margin = { top: 10, right: 60, bottom: 100, left: 90};
+    let chartWidth = width - margin.left - margin.right;
+    let chartHeight = height - margin.top - margin.bottom;
+
+    // Create scales
+    let xScale = d3.scalePoint().domain(ABBREV).range([0,chartWidth]);
+    let yScaleLeft = d3.scaleLinear().domain([0, (maxExp + 5)]).range([chartHeight, 0]).nice();
+    let yScaleRight = d3.scaleLinear().domain([minScore-40, maxScore+20]).range([chartHeight,0]).nice();
+
+    // Append axes
+    let xAxis = d3.axisBottom().scale(xScale);
+    let yLeftAxis = d3.axisLeft(yScaleLeft);
+    let yRightAxis = d3.axisRight(yScaleRight);
+
+    g3SVG.append("g")
+    .attr("class", "x")
+    .attr("transform","translate("+ (margin.left) +","+ (chartHeight+margin.top) +")")
+    .call(xAxis);
+
+    g3SVG.append("g")
+    .attr("transform","translate("+ margin.left +","+ margin.top +")")
+    .call(yLeftAxis)
+    .style("color", "#F47037");
+
+    g3SVG.append("g")
+    .attr("transform","translate("+ (margin.left+chartWidth) +","+ margin.top +")")
+    .call(yRightAxis)
+    .style("color", "mediumseagreen");;
+
+    // Add axis labels
+    g3SVG.append("text")
+      .attr("class", "labels")
+      .attr("text_anchor", "middle")
+      .attr("x", (chartWidth / 2)+margin.left)
+      .attr("y", chartHeight+50)
+      .text("State")
+      .style("font-size", "14px")
+      .style("font-weight", "bold");
+
+      // Add y-axis label
+      g3SVG.append("text")
+        .attr("class", "labels")
+        .attr("text_anchor", "middle")
+        .attr("x", margin.left)
+        .attr("y", chartHeight)
+        .text("Total Expenditure Per Student")
+        .attr("transform", "translate(-250," + (chartHeight+30) + ") rotate(-90)")
+        .style("font-size", "12px")
+        .style("font-weight", "bold")
+        .style("fill", "#F47037");
+
+        // Add y-axis label
+        g3SVG.append("text")
+          .attr("class", "labels")
+          .attr("text_anchor", "middle")
+          .attr("x", margin.left)
+          .attr("y", chartHeight-200)
+          .text("Avg. Grade 8 Exam Score")
+          .attr("transform", "translate(" + (chartWidth+margin.left+140) + "," + 0 + ") rotate(90)")
+          .style("font-size", "12px")
+          .style("fill", "mediumseagreen")
+          .style("font-weight", "bold");
+
+    // Create rectangles for expenditure bars
+    parsed.forEach(function(d,i){
+      g3SVG.append("rect")
+      .attr("x", (xScale(ABBREV[i+1]) + margin.left - (chartWidth/52)/2))
+      .attr("y", (margin.top + yScaleLeft(d.expenditure)))
+      .attr("width", chartWidth/52)
+      .attr("height", (chartHeight-yScaleLeft(d.expenditure)))
+      .style("fill", "#F47037")
+      .style("stroke", "black");
+
+      // Create data points for test scores
+      g3SVG.append("circle")
+      .attr("cx", (xScale(ABBREV[i]) + margin.left + (chartWidth/52)))
+      .attr("cy", (margin.top + yScaleRight(d.math_score)))
+      .attr("r", 3)
+      .style("fill", "lightgreen")
+      g3SVG.append("circle")
+      .attr("cx", (xScale(ABBREV[i]) + margin.left + (chartWidth/52)))
+      .attr("cy", (margin.top + yScaleRight(d.read_score)))
+      .attr("r", 3)
+      .style("fill", "darkgreen")
+
+      // Connect data points for test scores.
+      var mathLine = d3.line()
+      .x((d,i) => xScale(ABBREV[i]) + margin.left + (chartWidth/52))
+      .y(d => yScaleRight(d.math_score)+ margin.top);
+
+      var readLine = d3.line()
+      .x((d,i) => xScale(ABBREV[i]) + margin.left + (chartWidth/52))
+      .y(d => yScaleRight(d.read_score)+ margin.top);
+
+      g3SVG.append("g")
+        .append("path").attr("class", "path")
+        .datum(parsed)
+        .attr("d",mathLine)
+        .style("fill", "none")
+        .style("stroke", "lightgreen")
+        .style("stroke-width", "2px")
+
+      g3SVG.append("g")
+        .append("path").attr("class", "path")
+        .datum(parsed)
+        .attr("d",readLine)
+        .style("fill", "none")
+        .style("stroke", "darkgreen")
+        .style("stroke-width", "2px");
+    })
+
+    // Create legend for line plots
+    g3SVG.append("circle")
+    .attr("cx", chartWidth-30)
+    .attr("cy", height-30)
+    .attr("r", 4)
+    .style("fill", "lightgreen")
+    g3SVG.append("text")
+    .attr("x", chartWidth-20)
+    .attr("y", height-25)
+    .text("Avg. Grade 8 Math Scores")
+    .style("font-size", "12px");
+
+    g3SVG.append("circle")
+    .attr("cx", chartWidth-30)
+    .attr("cy", height-10)
+    .attr("r", 4)
+    .style("fill", "darkgreen")
+    g3SVG.append("text")
+    .attr("x", chartWidth-20)
+    .attr("y", height-5)
+    .text("Avg. Grade 8 Reading Scores")
+    .style("font-size", "12px");
+});
+</script>
   </script>
 
 </body>
