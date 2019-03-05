@@ -86,13 +86,10 @@
       <p>
         The bars of the chart show the expenditure per student by state for 2015.
         The line graph shows the trend in average math and reading exam scores for eight graders in 2015.
+        For some states, higher expenditure per student was correlated with higher
+        exam scores, but the relationship is not strong. Reading scores tended
+        to be lower than math scores.
       </p>
-      <ul>
-        <li>Visual Marks: Vertical bars indicating state expenditure,
-          Points and line connecting points indicating average exam scores by state.</li>
-        <li>Visual Channels: Color of points and lines, position of points and lines,
-          position of bars, height of bars.</li>
-      </ul>
 
       <div class="svg-graph-container">
         <div id="p3_div_for_svg">
@@ -174,20 +171,23 @@
 
     g3SVG.append("g")
     .attr("transform","translate("+ margin.left +","+ margin.top +")")
-    .call(yLeftAxis);
+    .call(yLeftAxis)
+    .style("color", "#F47037");
 
     g3SVG.append("g")
     .attr("transform","translate("+ (margin.left+chartWidth) +","+ margin.top +")")
-    .call(yRightAxis);
+    .call(yRightAxis)
+    .style("color", "mediumseagreen");;
 
-    // Add axis lables
+    // Add axis labels
     g3SVG.append("text")
       .attr("class", "labels")
       .attr("text_anchor", "middle")
       .attr("x", (chartWidth / 2)+margin.left)
       .attr("y", chartHeight+50)
       .text("State")
-      .style("font-size", "12px");
+      .style("font-size", "14px")
+      .style("font-weight", "bold");
 
       // Add y-axis label
       g3SVG.append("text")
@@ -197,7 +197,9 @@
         .attr("y", chartHeight)
         .text("Total Expenditure Per Student")
         .attr("transform", "translate(-250," + (chartHeight+30) + ") rotate(-90)")
-        .style("font-size", "12px");
+        .style("font-size", "12px")
+        .style("font-weight", "bold")
+        .style("fill", "#F47037");
 
         // Add y-axis label
         g3SVG.append("text")
@@ -207,7 +209,9 @@
           .attr("y", chartHeight-200)
           .text("Avg. Grade 8 Exam Score")
           .attr("transform", "translate(" + (chartWidth+margin.left+140) + "," + 0 + ") rotate(90)")
-          .style("font-size", "12px");
+          .style("font-size", "12px")
+          .style("fill", "mediumseagreen")
+          .style("font-weight", "bold");
 
     // Create rectangles for expenditure bars
     parsed.forEach(function(d,i){
@@ -216,7 +220,7 @@
       .attr("y", (margin.top + yScaleLeft(d.expenditure)))
       .attr("width", chartWidth/52)
       .attr("height", (chartHeight-yScaleLeft(d.expenditure)))
-      .style("fill", "mediumturquoise")
+      .style("fill", "#F47037")
       .style("stroke", "black");
 
       // Create data points for test scores
@@ -224,12 +228,12 @@
       .attr("cx", (xScale(ABBREV[i]) + margin.left + (chartWidth/52)))
       .attr("cy", (margin.top + yScaleRight(d.math_score)))
       .attr("r", 3)
-      .style("fill", "tan")
+      .style("fill", "lightgreen")
       g3SVG.append("circle")
       .attr("cx", (xScale(ABBREV[i]) + margin.left + (chartWidth/52)))
       .attr("cy", (margin.top + yScaleRight(d.read_score)))
       .attr("r", 3)
-      .style("fill", "coral")
+      .style("fill", "darkgreen")
 
       // Connect data points for test scores.
       var mathLine = d3.line()
@@ -245,7 +249,7 @@
         .datum(parsed)
         .attr("d",mathLine)
         .style("fill", "none")
-        .style("stroke", "burlywood")
+        .style("stroke", "lightgreen")
         .style("stroke-width", "2px")
 
       g3SVG.append("g")
@@ -253,7 +257,7 @@
         .datum(parsed)
         .attr("d",readLine)
         .style("fill", "none")
-        .style("stroke", "lightcoral")
+        .style("stroke", "darkgreen")
         .style("stroke-width", "2px");
     })
 
@@ -262,7 +266,7 @@
     .attr("cx", chartWidth-30)
     .attr("cy", height-30)
     .attr("r", 4)
-    .style("fill", "burlywood")
+    .style("fill", "lightgreen")
     g3SVG.append("text")
     .attr("x", chartWidth-20)
     .attr("y", height-25)
@@ -273,7 +277,7 @@
     .attr("cx", chartWidth-30)
     .attr("cy", height-10)
     .attr("r", 4)
-    .style("fill", "coral")
+    .style("fill", "darkgreen")
     g3SVG.append("text")
     .attr("x", chartWidth-20)
     .attr("y", height-5)
