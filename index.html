@@ -26,18 +26,18 @@
 </head>
 
 <body style="background-color: #dddddd;">
-<div class="container">
-  <div class="card mx-auto  my-2" style="width: 900px;">
-    <h4 class="card-header">INFO 3300 - Project 1</h4>
-    <div class="card-body">
-      <p>Project by:</p>
-      <ul>
-        <li>By SM Mashuque, (sm2344)</li>
-        <li>By Joe Mo, (x)</li>
-        <li>By Dana Luong, (x)</li>
-      </ul>
+  <div class="container">
+    <div class="card mx-auto  my-2" style="width: 900px;">
+      <h4 class="card-header">INFO 3300 - Project 1</h4>
+      <div class="card-body">
+        <p>Project by:</p>
+        <ul>
+          <li>By SM Mashuque, (sm2344)</li>
+          <li>By Joe Mo, (jjm492)</li>
+          <li>By Dana Luong, (x)</li>
+        </ul>
+      </div>
     </div>
-  </div>
 
   <div class="card mx-auto  my-2" style="width: 900px;">
     <h4 class="card-header">Graph 1.1: Heat-map of the Education Budget in 2016</h4>
@@ -79,35 +79,51 @@
       <div id="p1_div_for_legend">
       </div>
       <br>
-
     </div>
-  </div>
 
-  <div class="card mx-auto  my-2" style="width: 900px;">
-    <h4 class="card-header">Graph 3: Bar Chart Comparison</h4>
-    <div class="card-body">
-      <p>
-        Description about the graph....
-      </p>
-      <ul>
-        <li>Something 1</li>
-        <li>Something 2</li>
-        <li>Something 3</li>
-      </ul>
+    <div class="card mx-auto  my-2" style="width: 900px;">
+      <h5 class="card-header">Graph 2: Line-Chart Comparison</h5>
+      <div class="card-body">
 
-      <div class="svg-graph-container">
-        <div id="p3_div_for_svg">
+        <h5 style="margin-left:35px;">Average Total Expenditure vs. Average Grade 8 Exam Scores Between
+          1992 and 2017.</h5>
+
+        <div class="svg-graph-container">
+          <div id="p2_div_for_svg">
+          </div>
+          <div id="p2_div_for_legend">
+          </div>
         </div>
-        <div id="p3_div_for_legend">
-        </div>
+
       </div>
-
     </div>
+
+    <div class="card mx-auto  my-2" style="width: 900px;">
+      <h5 class="card-header">Graph 3: Bar Chart Comparison</h5>
+      <div class="card-body">
+        <p>
+          Description about the graph....
+        </p>
+        <ul>
+          <li>Something 1</li>
+          <li>Something 2</li>
+          <li>Something 3</li>
+        </ul>
+
+        <div class="svg-graph-container">
+          <div id="p3_div_for_svg">
+          </div>
+          <div id="p3_div_for_legend">
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
   </div>
 
-</div>
-
-<script>
+  <script>
   // Code for Graph One
   var svg_width = 800;
   var svg_height = 500;
@@ -354,13 +370,201 @@
 
 
   // Code for Graph Two
+    var educationData;
+    // Extracts Data, filters our invalid data, casts data to correct type
+    d3.csv("states_all.csv").then(function(data) {
+      educationData = data;
+      expenditureArray = [];
+      scoreArray = [];
+      yearArray = [];
+      educationData.forEach(function(d,i) {
+        d['AVG_MATH_8_SCORE'] = Number(d['AVG_MATH_8_SCORE']);
+        d['TOTAL_EXPENDITURE'] = Number(d['TOTAL_EXPENDITURE']);
+        d['ENROLL'] = Number(d['ENROLL']);
+        d['YEAR'] = Number(d['YEAR']);
+        educationData = educationData.filter(d => d['AVG_MATH_8_SCORE'] !== 0
+        && d['TOTAL_EXPENDITURE'] !== 0);
+      });
 
+      // Adds all expenditure and score data into respective arrays for
+      // each valid year of data. Also creates yearArray containing all
+      // valid years of data
+      educationData.forEach(function(d,i) {
+        if (!(d['YEAR'] in expenditureArray)) {
+          expenditureArray[d['YEAR']] = [d['TOTAL_EXPENDITURE']];
+          yearArray.push(d['YEAR']);
+        } else {
+          expenditureArray[d['YEAR']].push(d['TOTAL_EXPENDITURE']);
+        }
+        if (!(d['YEAR'] in scoreArray)) {
+          scoreArray[d['YEAR']] = [d['AVG_MATH_8_SCORE']];
+        } else {
+          scoreArray[d['YEAR']].push(d['AVG_MATH_8_SCORE']);
+        }
+      });
+
+      // Array of average total expenditure for each valid year of data
+      expenditureAverageArray = [];
+      expenditureArray.forEach(function(d,i) {
+        var expenditureTotal = 0;
+        for (let i=0;i<d.length;i++) {
+          expenditureTotal += d[i];
+        }
+        let expenditureAvg = Number((expenditureTotal/d.length).toFixed(1)/1000);
+        expenditureAverageArray.push(expenditureAvg);
+      });
+
+      // Array of average math 8 scores for each valid year of data
+      scoreAverageArray = [];
+      scoreArray.forEach(function(d,i) {
+        var scoreTotal = 0;
+        for (let i=0;i<d.length;i++) {
+          scoreTotal += d[i];
+        }
+        let scoreAvg = Number((scoreTotal/d.length).toFixed(1));
+        scoreAverageArray.push(scoreAvg);
+      });
+
+      // Max and min variables to use for scales
+      const minYear = d3.min(yearArray);
+      const maxYear = d3.max(yearArray);
+      const minExpenditure = d3.min(expenditureAverageArray);
+      const maxExpenditure = d3.max(expenditureAverageArray);
+      const minScore = d3.min(scoreAverageArray);
+      const maxScore = d3.max(scoreAverageArray);
+
+      var svg = d3.select("#p2_div_for_svg")
+        .append("svg")
+        .attr("width","800")
+        .attr("height","650");
+
+      // Linear scales created to translate data into svg
+      yearScale = d3.scaleLinear().domain([minYear-1,maxYear+1]).range([50,770]);
+      expenditureScale = d3.scaleLinear().domain([0,maxExpenditure]).range([600,50]);
+      scoreScale = d3.scaleLinear().domain([0,maxScore]).range([600,50]);
+
+      // Variables for x and y axes
+      var xAxis = d3.axisBottom(yearScale).tickFormat(d3.format("d"));
+      var yLeftAxis = d3.axisLeft(expenditureScale).ticks(20).tickFormat(d3.format("$0.2s"));
+      var yRightAxis = d3.axisRight(scoreScale).ticks(12);
+      var height = 650;
+      var width = 800;
+
+      // Creates the axes
+      svg.append("g")
+        .attr("class" , "x axis")
+        .attr("transform", "translate(0,600)")
+        .call(xAxis);
+
+      svg.append("g")
+        .attr("class", "y left axis")
+        .attr("transform", "translate(50,0)")
+        .style("color", "#F47037")
+        // Color taken from https://htmlcolorcodes.com/color-picker/
+        .call(yLeftAxis);
+
+      svg.append("g")
+        .attr("class", "y right axis")
+        .attr("transform", "translate(770,0)")
+        .style("color","#31CA3A")
+        // Color taken from https://htmlcolorcodes.com/color-picker/
+        .call(yRightAxis);
+
+      // Iterates through expenditure array and populates svg with circles
+      // as well as lines connecting them
+      expenditureAverageArray.forEach(function(d,i) {
+        let circle = svg.append("circle")
+          .attr("cx",yearScale(yearArray[i]))
+          .attr("cy",expenditureScale(expenditureAverageArray[i]))
+          .attr("r","6")
+          .attr("opacity",0.7)
+          .style("fill","#F47037");
+          // Color taken from https://htmlcolorcodes.com/color-picker/
+        var line = d3.line()
+          .x((d,i) => yearScale(yearArray[i]))
+          .y((d,i) => expenditureScale(expenditureAverageArray[i]));
+
+        svg.append("path")
+          .datum(expenditureAverageArray)
+          .attr("d",line)
+          .style("stroke-width", "1px")
+          .style("stroke","#F47037")
+          // Color taken from https://htmlcolorcodes.com/color-picker/
+          .style("opacity",0.6)
+          .style("fill","none");
+      });
+
+      // Iterates through expenditure array and populates svg with circles
+      // as well as lines connecting them
+      scoreAverageArray.forEach(function(d,i) {
+        let circle = svg.append("circle")
+          .attr("cx",yearScale(yearArray[i]))
+          .attr("cy",scoreScale(scoreAverageArray[i]))
+          .attr("r","6")
+          .attr("opacity",0.6)
+          .style("fill","#31CA3A");
+          // Color taken from https://htmlcolorcodes.com/color-picker/
+        var line = d3.line()
+          .x((d,i) => yearScale(yearArray[i]))
+          .y((d,i) => scoreScale(scoreAverageArray[i]));
+
+        svg.append("path")
+          .datum(scoreAverageArray)
+          .attr("d",line)
+          .style("stroke-width", "1px")
+          .style("stroke","#31CA3A")
+          // Color taken from https://htmlcolorcodes.com/color-picker/
+          .style("opacity",0.6)
+          .style("fill","none");
+      });
+
+      // Add legend and x axis label
+      d3.select("#p2_div_for_legend")
+        .append("h6").text("Years")
+        .style("text-align","center");
+
+      var legend = d3.select("#p2_div_for_legend")
+        .append("svg")
+        .attr("width","800")
+        .attr("height","50");
+
+      legend.append("circle")
+        .attr("r",5)
+        .attr("cx","120")
+        .attr("cy","20")
+        .style("fill", "#F47037")
+        // Color taken from https://htmlcolorcodes.com/color-picker/
+        .style("opacity",0.8);
+
+      legend.append("text")
+        .attr("x","140")
+        .attr("y","25")
+        .style("fill","#F47037")
+        // Color taken from https://htmlcolorcodes.com/color-picker/
+        .text("Average Total Expenditure (Thousands)");
+
+      legend.append("circle")
+        .attr("r",5)
+        .attr("cx","480")
+        .attr("cy","20")
+        .style("fill", "#31CA3A")
+        // Color taken from https://htmlcolorcodes.com/color-picker/
+        .style("opacity",0.8);
+
+      legend.append("text")
+        .attr("x","500")
+        .attr("y","25")
+        .style("fill","#31CA3A")
+        // Color taken from https://htmlcolorcodes.com/color-picker/
+        .text("Average Grade 8 Math Scores");
+
+    });
 
 
 
   // Code for Graph Three
 
-</script>
+  </script>
 
 </body>
 
